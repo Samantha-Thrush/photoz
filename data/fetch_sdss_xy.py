@@ -41,7 +41,7 @@ from astropy.io import fits
 from astropy import wcs
 
 
-def fetch_fits(df, dirname="temp"):
+def fetch_fits(df, dirname="temp", used_bands="ugriz"):
 
     bands = [c for c in 'ugriz']
 
@@ -77,6 +77,7 @@ def fetch_fits(df, dirname="temp"):
                     continue
 
             if not os.path.exists(filepath):
+                print(filepath) #modification
                 raise Exception
 
 def get_ref_list(df):
@@ -90,7 +91,7 @@ def get_ref_list(df):
 
     return ref_images
 
-def align_images(images, frame_dir="temp", registered_dir="temp"):
+def align_images(images, frame_dir="temp", registered_dir="temp", used_bands="ugriz"):
     '''
     '''
 
@@ -337,7 +338,7 @@ def run_sex(df, dirname="temp"):
 
     return cat
 
-def nanomaggie_to_luptitude(array, band):
+def nanomaggie_to_luptitude(array, band, used_bands="ugriz"):
     '''
     Converts nanomaggies (flux) to luptitudes (magnitude).
     http://www.sdss.org/dr12/algorithms/magnitudes/#asinh
@@ -356,7 +357,7 @@ def nanomaggie_to_luptitude(array, band):
     
     return luptitude
 
-def save_cutout(df, cat, size=48, image_dir="temp", save_dir="result_full"):
+def save_cutout(df, cat, size=48, image_dir="temp", save_dir="result", used_bands="ugriz"):
 
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -406,7 +407,7 @@ def save_cutout(df, cat, size=48, image_dir="temp", save_dir="result_full"):
             
             
 ########MY MODIFICATION UPON SAVE_CUTOUT####            
-def save_Xy(df, cat, size=48, image_dir="temp", save_dir="result_full"):
+def save_Xy(df, cat, size=48, image_dir="temp", save_dir="result", used_bands="ugriz"):
 
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -452,17 +453,21 @@ def save_Xy(df, cat, size=48, image_dir="temp", save_dir="result_full"):
         if np.isnan(array).sum() == 0 and array.sum() > 0:
         
             save_path = os.path.join(save_dir, "{0:.8f}.{1}x{1}.{2}.npy".format(row["z"], size, row["objID"]))
-            np.save(save_path, array)    
+            np.save(save_path, array)
+            print(save_dir)
+            print("saved")
 
-def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100):
+def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100, used_bands="ugriz", result_dir="result"):
 
     df = pd.read_csv(filename, dtype={"objID": "object"})
+    print(len(df))
 
-    if os.path.exists("result_full"):
-        done = os.listdir("result_full")
-        done = [d.split(".")[2] for d in done]
+    if os.path.exists(result_dir):
+        done = os.listdir(result_dir)
+        done = [d.split(".")[3] for d in done]
         # check existing results and skip
         df = df[~df.objID.isin(done)]
+        print(len(df))
 
     write_default_conv()
     write_default_param()
@@ -485,9 +490,10 @@ def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100):
         try:
             #saved = save_cutout(chunk, cat, size=48)
             saved = save_Xy(chunk, cat, size=48)
-            print("saved")
+            #print("saved")
         except:
             pass
+            print("passed")
         shutil.rmtree("temp")
         print("{} objects remaining...".format(len(df) - chunk_size - i))
 
@@ -508,7 +514,7 @@ def run_parallel(filename, dest=None):
 
     if os.path.exists("result"):
         done = os.listdir("result")
-        done = [d.split(".")[2] for d in done]
+        done = [d.split(".")[3] for d in done]
         # check existing results and skip
         df = df[~df.objID.isin(done)].dropna()
 
