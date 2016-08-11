@@ -33,4 +33,8 @@ ENV PATH $PATH:/montage/bin
 
 RUN pip install --upgrade --no-deps git+git://github.com/Theano/Theano.git && \
     pip install --upgrade --no-deps git+git://github.com/Lasagne/Lasagne.git && \
-    pip install --upgrade --no-deps git+git://github.com/dnouri/nolearn.git
+    pip install --upgrade --no-deps git+git://github.com/dnouri/nolearn.git && \
+    
+    # this installs the tabulate library, which is needed for nolearn and Lasagne 
+    # this is what I changed.
+    pip install tabulate
