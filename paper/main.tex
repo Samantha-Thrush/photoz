@@ -1,23 +1,51 @@
-\documentclass[useAMS,usenatbib]{mn2e}
-\usepackage[letterpaper,margin=0.65in]{geometry}
+% Basic setup. Most papers should leave these options alone.
+\documentclass[fleqn,usenatbib]{mnras}
+
+% MNRAS is set in Times font. If you don't have this installed (most LaTeX
+% installations will be fine) or prefer the old Computer Modern fonts, comment
+% out the following line
+%\usepackage{newtxtext,newtxmath}
+% Depending on your LaTeX fonts installation, you might get better results with one of these:
+\usepackage{mathptmx}
+%\usepackage{txfonts}
+
+% Use vector fonts, so it zooms properly in on-screen viewing software
+% Don't change these lines unless you know what you are doing
+\usepackage[T1]{fontenc}
+\usepackage{ae,aecompl}
+
+
+%%%%% AUTHORS - PLACE YOUR OWN PACKAGES HERE %%%%%
+
+% Only include extra packages if you really need them. Common packages are:
+\usepackage{savesym}
+\usepackage{amsmath}
+\savesymbol{iint}
+\usepackage{txfonts}
+\restoresymbol{TXF}{iint}
+
+\usepackage{graphicx}	% Including figure files
+%\usepackage{amsmath}	% Advanced maths commands
+\usepackage{amssymb}	% Extra maths symbols
 \usepackage[ansinew]{inputenc}
 \usepackage{amsfonts}
-\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{epsfig}
 \usepackage{color}
-\usepackage{amssymb}
 \usepackage[normalem]{ulem}
 \usepackage{natbib}
-\usepackage{url}
+%\usepackage{url}
+\usepackage{hyperref}
 \usepackage{placeins}
-\usepackage{times}
+\usepackage{caption}
+\usepackage{subcaption}
+\captionsetup{compatibility=false}
 
 % By default the URLs are put in typewriter type in the body and the
 % bibliography of the document when using the \url command.  If you are
 % using many long URLs you may want to uncommennt the next line so they
 % are typeset a little smaller.
-\renewcommand{\UrlFont}{\small\tt}
+%\renewcommand{\UrlFont}{\small\tt}
 
 \def\aap{{A\&A}}
 \def\AaA{{A\&A}}
@@ -46,58 +74,112 @@
 
 \pdfminorversion=5
 
-\title[Deep Learning]{Deep Learning for Source Classification}
+\title[Dreaming of Photo-z's]{Applying Deep Learning to the Galaxy Photo-z Problem}
 
-\author[E. J. Kim \& R. J. Brunner]{
-  Edward J.~Kim$^1$\thanks{jkim575@illinois.edu},
-  Robert J.~Brunner$^{2,3,4}$ \\
-$^1$Department of Physics, University of Illinois, Urbana, IL 61801 USA\\
-$^2$Department of Astronomy, University of Illinois, Urbana, IL 61801 USA\\
+\author[S. E. Thrush and R. J. Brunner]{
+  Samantha E. Thrush$^1$\thanks{thrush2@illinois.edu} and Robert J.~Brunner$^{1,2,3,4}$ \\
+$^1$Department of Astronomy, University of Illinois, Urbana, IL 61801 USA\\
+$^2$Department of Physics, University of Illinois, Urbana, IL 61801 USA\\
 $^3$Department of Statistics, University of Illinois, Champaign, IL 61820 USA\\
-$^4$National Center for Supercomputing Applications, Urbana, IL 61801 USA}
+$^4$National Center for Supercomputing Applications, Urbana, IL 61801 USA
+}
 
+% These dates will be filled out by the publisher
+\date{Accepted XXX. Received YYY; in original form ZZZ}
+
+% Enter the current year, for the copyright statements etc.
+\pubyear{2015}
+
+% Don't change these lines
 \begin{document}
-
-\date{\today}
-
-\pagerange{\pageref{firstpage}--\pageref{lastpage}} \pubyear{2015}
-
+\label{firstpage}
+\pagerange{\pageref{firstpage}--\pageref{lastpage}}
 \maketitle
 
-\label{firstpage}
 \begin{abstract}
-Deep learning.
+When large data sets of galaxies are collected, their associated redshifts are usually collected by finding their photometric redshifts, which takes additional time for a survery to complete.  However, if deep learning via deep convolutional neural networks (ConvNets) are utilized, photometric redshifts of galaxies can be predicted without the need for photometry to be completed by the associated survey. In this paper, we present an application of ConvNets on reduced and pixelated galaxy images and redshift data from the Sloan Digital Sky Survey (SDSS).  We will show that ConvNets are able to accurately predict the redshift of a sample galaxy image in a way that is competitive with previous works on this subject.
 \end{abstract}
 
 \begin{keywords}
-methods: data analysis -- methods: statistical -- surveys -- stars: statistics
--- galaxies:statistics.
+methods: data analysis -- techniques: image processing -- methods: statistical
+-- surveys -- galaxies:statistics.
 \end{keywords}
 
-
 \section{Introduction}
-  \label{section:introduction}
+  \label{sec:introduction}
+Before the advent of machine learning, finding a galaxy's redshift required the collection of its spectra so as to ascertain its recession speed and thus its distance and redshift from the observer using Hubble's Law ~\citep{hubble_relation_1929}. Unfortunately, spectroscopy can only be done on a select number of targets at a time due to time constraints of both setting up the spectrograph (be it a slit or a plate and optic fiber setup) and long exposure times (usually on the order of an hour).  In contrast, photometric images are much quicker to observe as very little setup is needed in order to obtain the image (apart from calibrations) and each image taken requires a comparatively shorter exposure time (54.1 seconds for each photometric band of the Sloan Digital Sky Survey) ~\citep{york_sloan_2000}.  Because of this, the idea of only using an object's image to ascertain its redshift is very attractive.  
+
+Using an object's photometric image to find its redshift (here-in known as photo-z) was first suggested by ***NAME*** in ***YEAR*** (citations needed, look at PHAT paper), but this idea did not come to fruition in a widespread manner until ***YEAR*** (citation needed).  This was when ***Event*** happened.  The main limiting factor to the advent of finding photo-z's was computational power; 
+
+In this paper, we will first review previous works on this subject in Section ~\ref{sec:review}, followed by an explanation of the key ways this body of work differs from previous works.  In Section ~\ref{sec:method}, the Deep Learning code and the selection of the data set from the Sloan Digital Sky Survey (SDSS) will be discussed.  Section ~\ref{sec:results_and_discussion} will contain the results of the Deep Learning code, which will be subsequently discussed and analyzed.  Finally, Section ~\ref{sec:conclusions} will contain the conclusions of this paper.
+
+\section{Literature Review}
+  \label{sec:review}
+Ascertaining the redshifts of galaxies using spectroscopic redshifts has classically been a time-consuming pursuit due to the necessary exposure times for a spectrographic image.  Fortunately, with the advent of machine learning, it is possible to ascertain the redshift of a galaxy only using photometric data, thus ascertaining the photometric redshift or "photo-z" as it is commonly called.  The project at hand is composed of many parts, so in order to organize the logic behind all of the choices and decisions made, it is important to reflect upon previous research. First, the Sloan Digital Sky survey and its bearing on the project will be discussed.  Then, we will consider previous projects that utilize Neural Networks for its applications to images and regressing galaxy images to find their redshifts. 
+
+\subsection{Sloan Digital Sky Survey}
+  \label{sec:sdss}
+The Sloan Digital Sky Survey Data Release 12 ~\citep[SDSS-DR12;][]{alam_DR12}, which includes data from phases I-III (April 2000 through 14 July 2014), has served the astronomical community by providing photometric data on 14,555 square degrees of the sky (approximately one-third of the sky), resulting in the observation of approximately 470 million individual targets in five different bands (u, g, r, i, and z), with magnitudes brighter, or comparable to 22 (the limiting magnitude). Of these targets, only approximately 200 million are galaxies.  In addition to photometric information, SDSS-DR12 also provides spectroscopic data on over 4.35 million targets, 2.4 million of which are galaxies.
+  
+\subsection{Neural Networks and Photometric Redshifts}
+  \label{sec:nn_and_photoz}
+
+There are many different ways of ascertaining a galaxy's photometric redshift using machine learning, as was shown in the PHAT Photo-z data trial ~\citep{hildebrandt_phat}.
+  
+\section{Methodology}
+  \label{sec:method}
+
+\subsection{Data Selection}
+   \label{sec:data_sel}   
+The various band pass trials described below were completed on SDSS galaxy images.  These galaxies and were selected with CasJobs~\citep{li_casjobs_2008} in such a fashion so as to maximize fidelity of the data.  This was achieved by selecting for galaxies with clean photometry (photo.clean = 1), no known issues with its spectra (spec.zWarning = 0), small redshift errors (spec.zErr < 0.1) and redshifts under 2 (spec.z < 2).  In addition, the exponential scale fit radius and the de Vaucouleurs fit scale radius were required to be below 30 arc seconds (so as to exclude bad photometric images).
+
+100,000 galaxies selected from SDSS-DR12 were randomly selected from the subset of galaxies fitting the criteria above using CASJOBS.  These selection criteria were taken and modified from Edward Kim's work (used in Kim and Brunner 2016).
+
+\subsection{Data Processing}
+  \label{sec:data_proc}
+The collected 
+
+WHY AM I GOING TO BE DOING BAND PASS RESULTS WITH LESS THAN 5 BANDS? NEED TO FIGURE OUT WHY EVERYONE ELSE DOES 5 BAND TRIALS, NOT LESS.  MAYBE BECAUSE ITS LACKING IN CRUCIAL DATA? i MEAN, IT'S NATURAL TO THINK THAT DEEP LEARNING THRIVES ON MORE DETAILED DATA, NOT LESS, BUT UNDER WHAT PRECIDENT?
 
 
-\section{Methods}
-  \label{section:methods}
+\subsection{Neural Network Code}
+  \label{sec:code}
+Through the use of a supervised neural network code created by Edward Kim (used in Kim and Brunner 2016), the data collected from SDSS
 
-
-\section{Data}
-  \label{section:data}
-
+\subsection{Band Pass Trials}
+   \label{sec:bandmethod}
+In order to ascertain the effectiveness of different band pass image combinations on the Neural Network's ability to assign an accurate redshift to the image, 
 
 \section{Results and Discussion}
-  \label{section:results_and_discussion}
+  \label{sec:results_and_discussion}
+  
+\subsection{Five Band Pass Results}
+  \label{sec:five_bp_res}
 
+\subsection{Four Band Pass Results}
+  \label{sec:four_bp_res}
+  
+\subsection{Three Band Pass Results}
+  \label{sec:three_bp_res}
+  
+\subsection{Two Band Pass Results}
+  \label{sec:two_bp_res}
 
+\subsection{One Band Pass Results}
+  \label{sec:one_bp_res}
+  
+\subsection{Discussion}
+  \label{sec:Discussion}
+  
 \section{Conclusions}
-  \label{section:conclusions}
-
+  \label{sec:conclusions}
 
 \section*{Acknowledgements}
 
-We thank XXXX.
+We acknowledge support from the 
+National Science Foundation Grant No.\ AST-1313415.
+RJB acknowledges support as an Associate
+within the Center for Advanced Study at the University of Illinois.
 
 Funding for SDSS-III has been provided by the Alfred P. Sloan Foundation, the
 Participating Institutions, the National Science Foundation, and the U.S.
@@ -118,22 +200,14 @@ Princeton University, the Spanish Participation Group, University of Tokyo,
 University of Utah, Vanderbilt University, University of Virginia, University
 of Washington, and Yale University.
 
-This paper uses data from the 
-VIMOS Public Extragalactic Redshift Survey (VIPERS).
-VIPERS has been performed using the ESO Very Large Telescope, under the "Large
-Programme" 182.A-0886. The participating institutions and funding agencies are
-listed at http://vipers.inaf.it/.
-
-This research uses data from the VIMOS VLT Deep Survey, obtained from the VVDS
-database operated by Cesam, Laboratoire d'Astrophysique de Marseille, France.
-
 \footnotesize{
-\bibliographystyle{mn2e}
-\bibliography{sg_paper}
+\bibliographystyle{mnras}
+\bibliography{photz_paper}
 }
 
-\bsp
-
+% Don't change these lines
+\bsp	% typesetting comment
 \label{lastpage}
-
 \end{document}
+
+% End of mnras_template.tex
