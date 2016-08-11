@@ -338,7 +338,7 @@ def run_sex(df, dirname="temp"):
 
     return cat
 
-def nanomaggie_to_luptitude(array, band, used_bands="ugriz"):
+def nanomaggie_to_luptitude(array, band):
     '''
     Converts nanomaggies (flux) to luptitudes (magnitude).
     http://www.sdss.org/dr12/algorithms/magnitudes/#asinh
@@ -385,7 +385,7 @@ def save_cutout(df, cat, size=48, image_dir="temp", save_dir="result", used_band
         matched = df[df["objID"] == row.astype("object")["objID"]]
         assert len(matched) == 1
 
-        for j, b in enumerate("ugriz"):
+        for j, b in enumerate(used_bands):
 
             fpath = os.path.join(image_dir, row["file"])
             image_data = fits.getdata(fpath.replace("-r-", "-{}-".format(b)))
@@ -435,7 +435,7 @@ def save_Xy(df, cat, size=48, image_dir="temp", save_dir="result", used_bands="u
         assert len(matched) == 1
         
 
-        for j, b in enumerate("ugriz"):
+        for j, b in enumerate(used_bands):
             fpath = os.path.join(image_dir, row["file"])
             image_data = fits.getdata(fpath.replace("-r-", "-{}-".format(b)))
             
@@ -457,7 +457,7 @@ def save_Xy(df, cat, size=48, image_dir="temp", save_dir="result", used_bands="u
             print(save_dir)
             print("saved")
 
-def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100, used_bands="ugriz", result_dir="result"):
+def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100, bands="ugriz", result_dir="result"):
 
     df = pd.read_csv(filename, dtype={"objID": "object"})
     print(len(df))
@@ -477,19 +477,24 @@ def run_online_mode(filename="DR12_spec_phot_sample.csv", chunk_size=100, used_b
         chunk = df[i: i + chunk_size]
         print("chunked")
         # download image fits files
-        fetch_fits(chunk)
+        
+        fetch_fits(chunk, used_bands=bands)
         print("fetched fits")
+        
         ref_images = get_ref_list(chunk)
         print("got reference list")
-        align_images(ref_images)
+        
+        align_images(ref_images, used_bands=bands)
         print("aligned images")
+        
         convert_catalog_to_pixels(chunk)
         print("to pixels")
+        
         cat = run_sex(chunk)
         print("ran sex")
         try:
             #saved = save_cutout(chunk, cat, size=48)
-            saved = save_Xy(chunk, cat, size=48)
+            saved = save_Xy(chunk, cat, size=48, used_bands=bands, save_dir=result_dir)
             #print("saved")
         except:
             pass
@@ -546,5 +551,5 @@ def run_parallel(filename, dest=None):
         print("Core {}: {} objects remaining...".format(rank, len(df) - 1 - i))
         
 if __name__ == "__main__":
-    run_online_mode(filename = "DR12_spec_phot_sample_thrush2.csv")
+    run_online_mode(filename = "DR12_spec_phot_sample_thrush2.csv", bands="ugriz", result_dir = "result")
     #run_parallel(filename="DR12_spec_phot_sample_thrush2.csv")
